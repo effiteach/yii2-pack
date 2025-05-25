@@ -24,22 +24,24 @@ class Aliyun extends Base
         $res = ZCurlAliyun::get($url, [
             'no' => $no,
             'type' => $type,
-        ], 'GET');
+        ], 'GET'); 
         if ($res['code'] != 0) {
             return $res;
         }
+        $find_list = $res['result']['list']??[];
         $new_list = [];
-        if (isset($res['result']['list'])) {
-            foreach ($res['result']['list'] as $v) {
-                $time_arr = explode(' ', $v['time']);
-                $new_list[] = [
-                    'title' => $v['status'] ?? '',
-                    'status' => self::parseTitle($v['status'] ?? ''),
-                    'time' => $v['time'],
-                    'time_arr' => $time_arr,
-                ];
-            }
+        if (!$find_list) {
+            return [];
         }
+        foreach ($find_list as $v) {
+            $time_arr = explode(' ', $v['time']);
+            $new_list[] = [
+                'title' => $v['status'] ?? '',
+                'status' => self::parseTitle($v['status'] ?? ''),
+                'time' => $v['time'],
+                'time_arr' => $time_arr,
+            ];
+        } 
         $status_arr = [
             0 => '快递收件(揽件)',
             1 => '在途中',
@@ -50,14 +52,14 @@ class Aliyun extends Base
             6 => '退件签收',
         ];
         $list = [];
-        $list['status'] = $status_arr[$res['result']['deliverystatus']] ?? '';
+        $list['status'] = $status_arr[$res['result']['deliverystatus']??''] ?? '';
         $list['no'] = $res['result']['number'];
-        $list['title'] = $res['result']['expName'];
-        $list['site_url'] = $res['result']['expSite'];
-        $list['site_phone'] = $res['result']['expPhone'];
-        $list['phone'] = $res['result']['courierPhone'];
-        $list['take_time'] = $res['result']['takeTime'];
-        $list['logo'] = $res['result']['logo'];
+        $list['title'] = $res['result']['expName']??'';
+        $list['site_url'] = $res['result']['expSite']??'';
+        $list['site_phone'] = $res['result']['expPhone']??'';
+        $list['phone'] = $res['result']['courierPhone']??'';
+        $list['take_time'] = $res['result']['takeTime']??'';
+        $list['logo'] = $res['result']['logo']??'';
         $list['list'] = $new_list;
         $list['code'] = 0;
         set_cache($cache_key, $list, 300);
